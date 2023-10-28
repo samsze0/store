@@ -7,9 +7,9 @@ A zustand-like state management solution.
 - Support any state types. Zustand assumes state is an object.
 - Addition of `DeriveStore` which creates a store that derives its state from any number of other stores.
 
-**Example usage**
+## Usage
 
-React:
+**`ObjectStore`** (similar to Zustand-store)
 
 ```typescript
 const counterStore = createObjectStore<CounterState>((set) => ({
@@ -30,7 +30,15 @@ function Counter() {
 }
 ```
 
-Derive stores:
+**`SimpleStore`** (similar to Jotai atom)
+
+```typescript
+const store = createSimpleStore("Hello");
+
+store.setState("Hello");
+```
+
+**`DeriveStore`** (similar to Jotai derive atom, but work with stores too)
 
 ```typescript
 const depStore1 = create<{

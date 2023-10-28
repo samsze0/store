@@ -1,8 +1,8 @@
 import { expect, test } from "vitest";
-import { createObjectStore as createStore } from "../src";
+import { createObjectStore, createSimpleStore } from "../src";
 
-test("derive", () => {
-  const store = createStore<{
+test("ObjectStore", () => {
+  const store = createObjectStore<{
     x: number[];
     y: string;
   }>(() => ({
@@ -27,4 +27,18 @@ test("derive", () => {
     // @ts-expect-error: should not be able to mutate state because it is readonly
     store.getState().x = 3;
   }).toThrowError(/^.*$/);
+});
+
+test("SimpleStore", () => {
+  const store = createSimpleStore("Hello");
+
+  store.setState("Hello");
+  expect(store.getState()).toBe("Hello");
+
+  let called = { value: false };
+  store.subscribe((state, prevState) => {
+    called.value = true;
+  });
+
+  store.setState("World");
 });
