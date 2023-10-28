@@ -60,3 +60,9 @@ const deriveStore = derive<string, [typeof depStore1, typeof depStore2]>(
   }
 );
 ```
+
+## TODO
+
+- More tests e.g. with SSR
+- Middlewares support (immer, persist)
+- `MutableStore` (similar to Valtio)
