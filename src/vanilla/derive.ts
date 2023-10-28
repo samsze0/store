@@ -1,33 +1,19 @@
-import { SetStateError, Store, createObjectStore } from ".";
-
-/**
- * Extract type of a `Store` by retrieving return type of `getState`
- */
-type GetStoreState<T> = T extends Store<any>
-  ? ReturnType<T["getState"]>
-  : never;
-
-/**
- * Extract the types of an array of `Store`s
- */
-type UnwrapStores<T> = T extends readonly Store<any>[]
-  ? T extends [infer Head, ...infer Tail]
-    ? readonly [GetStoreState<Head>, ...UnwrapStores<Tail>]
-    : readonly []
-  : never;
+import { GetStoresStates, Overwrite, SetStateError, Store } from "../shared";
+import { ObjectStore, SimpleStore, createObjectStore } from "./immutable";
 
 /**
  * A store that derives its state from other zustand stores. An internal `ObjectStore` is used to facilitate this custom store implementation.
- * @param stores The input stores
+ * @param stores The input stores. Input stores are required to have a `subscribe` function with a specific signature - `(listener: (state, prevState) => void)`
  * @param onChange A function thast takes the state of the input stores and returns the derived state.
  * `onChanged` is called whenever any of the input stores change, and when the derived store is first created.
  *
  * @returns A `Store`. Typescript can infer if the derived store is a `SimpleStore` or an `ObjectStore`. But it can always be asserted with `as`.
  */
 export const derive = <
-  T extends any,
-  Stores extends readonly Store<any>[],
-  DepsState extends UnwrapStores<Stores> = UnwrapStores<Stores>
+  T,
+  Stores extends Overwrite<Store, Pick<ObjectStore<any>, "subscribe">>[],
+  // FIX: make this type arg optional
+  DepsState extends GetStoresStates<Stores> = GetStoresStates<Stores>
 >(
   stores: Stores,
   onChange: (
@@ -35,7 +21,7 @@ export const derive = <
     prevDepsState: DepsState | null,
     prevState: T | null
   ) => T
-): Store<T> => {
+): SimpleStore<T> | ObjectStore<T> => {
   type Listener = (state: T, prevState: T) => void;
 
   /**
@@ -87,8 +73,7 @@ export const derive = <
       // https://immerjs.github.io/immer/pitfalls/#immer-only-supports-unidirectional-trees
 
       const newDepsState: DepsState = [...currentDepsState];
-      // @ts-ignore
-      newDepsState[index] = depState;
+      newDepsState[index as keyof DepsState] = depState;
 
       const prevState = store.getState().state;
 
@@ -125,7 +110,7 @@ export const derive = <
         const listeners = store.getState().listeners;
         listeners.delete(listener);
         store.setState({
-          listeners: listeners,
+          listeners,
         });
       };
     },
