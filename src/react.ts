@@ -1,17 +1,33 @@
 import { useDebugValue, useSyncExternalStore } from "react";
 import { useSyncExternalStoreWithSelector } from "use-sync-external-store/shim/with-selector";
-import { Store } from ".";
+import { Overwrite, Store } from "./shared";
 
 export type StoreSelector<T, V> = (state: Readonly<T>) => V;
 
-export function useStore<T>(api: Store<T>): Readonly<T>;
+type ReactSyncableStore<T> = Overwrite<
+  Store,
+  {
+    getState: () => Readonly<T>;
+    subscribe: (
+      listener: (state: any, prevState: any) => any,
+      ...args: any[]
+    ) => any;
+  }
+>;
+
+/**
+ * A React hook that subscribes to a `Store` and returns its state.
+ * @param store A `Store` with a `subscribe` function that takes a listener as argument.
+ * The listener must take the form `(state, prevState) => any`.
+ */
+export function useStore<T>(store: ReactSyncableStore<T>): Readonly<T>;
 export function useStore<T, V>(
-  store: Store<T>,
+  store: ReactSyncableStore<T>,
   selector: StoreSelector<T, V>,
   equalityFn?: (a: V, b: V) => boolean
 ): V;
 export function useStore<T, V>(
-  store: Store<T>,
+  store: ReactSyncableStore<T>,
   selector?: StoreSelector<T, V>,
   equalityFn?: (a: V, b: V) => boolean
 ): Readonly<T> | V {
@@ -20,6 +36,7 @@ export function useStore<T, V>(
     // https://github.com/facebook/react/blob/main/packages/use-sync-external-store/src/useSyncExternalStoreWithSelector.js
     const slice = useSyncExternalStoreWithSelector(
       store.subscribe,
+      // FIX: type returned by useStore is any
       store.getState,
       store.getState, // TODO: getServerSnapshot
       selector,

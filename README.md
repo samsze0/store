@@ -6,6 +6,8 @@ A zustand-like state management solution.
 - Safer. States are runtime immutable as they are freezed with `Object.freeze`.
 - Support any state types. Zustand assumes state is an object.
 - Addition of `DeriveStore` which creates a store that derives its state from any number of other stores.
+- Middlewares are implemented using JS proxy.
+- No cryptic TS typings in source code.
 
 ## Usage
 
@@ -61,8 +63,19 @@ const deriveStore = derive<string, [typeof depStore1, typeof depStore2]>(
 );
 ```
 
+**Middleware**
+
+```typescript
+
+```
+
+## Middleware System - Design Decision
+
+It seems like the majority of the complexity of Zustand comes from its middleware system. The challenge of creating such a middleware system is that the `Store` (i.e. `StoreApi` in Zustand terms) interface changes dynamically as middlewares are added to the store. For instance, when the `subscribeWithSelector` middleware is added to the store, the `subscribe` function takes a "selector" as an additional argument. In order to get type support for this behaviour, a lot of TS tricks are used.
+
+This library's middleware system is facilited by JS Proxy.
+
 ## TODO
 
 - More tests e.g. with SSR
-- Middlewares support (immer, persist)
 - `MutableStore` (similar to Valtio)

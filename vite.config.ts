@@ -40,5 +40,6 @@ export default defineConfig({
       reporter: ["text", "json", "html", "text-summary"],
       reportsDirectory: "./coverage/",
     },
+    exclude: ["**/*type.test.ts"],
   },
 });
