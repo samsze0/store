@@ -7,7 +7,30 @@ A zustand-like state management solution.
 - Support any state types. Zustand assumes state is an object.
 - Addition of `DeriveStore` which creates a store that derives its state from any number of other stores.
 
-Example usage:
+**Example usage**
+
+React:
+
+```typescript
+const counterStore = createObjectStore<CounterState>((set) => ({
+  count: 0,
+  inc: () => set((state) => ({ count: state.count + 1 })),
+}));
+
+function Counter() {
+  const count = useStore(
+    counterStore,
+    (s) => s.count
+  );
+  return (
+    <div>
+      count: {count}
+    </div>
+  );
+}
+```
+
+Derive stores:
 
 ```typescript
 const depStore1 = create<{
