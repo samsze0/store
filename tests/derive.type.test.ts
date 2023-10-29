@@ -40,4 +40,11 @@ test("derive", () => {
       };
     }
   );
+
+  deriveStore.subscribe((state, prevState) => {
+    // @ts-expect-error: prevDeps could be null
+    prevState.deps[0];
+
+    state.deps[0];
+  });
 });

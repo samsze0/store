@@ -1,5 +1,10 @@
 import { GetStoresStates, Overwrite, SetStateError, Store } from "../shared";
-import { ObjectStore, SimpleStore, createObjectStore } from "./immutable";
+import {
+  ObjectStore,
+  ObjectStoreUnsubscriber,
+  SimpleStore,
+  createObjectStore,
+} from "./immutable";
 
 /**
  * A store that derives its state from other zustand stores. An internal `ObjectStore` is used to facilitate this custom store implementation.
@@ -21,8 +26,15 @@ export const derive = <
     prevDepsState: DepsState | null,
     prevState: T | null
   ) => T
-): SimpleStore<T> | ObjectStore<T> => {
-  type Listener = (state: T, prevState: T) => void;
+): Overwrite<
+  SimpleStore<T> | ObjectStore<T>,
+  {
+    subscribe: (
+      listener: (state: T, prevState: T | null) => void
+    ) => ObjectStoreUnsubscriber;
+  }
+> => {
+  type Listener = (state: T, prevState: T | null) => void;
 
   /**
    * The initial states of the input stores
@@ -56,14 +68,14 @@ export const derive = <
      * The unsubscribe handlers of the input stores
      */
     depsSubs: (() => void)[];
-  }>((set, get) => ({
+  }>({
     listeners: new Set(),
     depsState: initialDepsState,
     prevDepsState: null,
     state: onChange(initialDepsState, null, null),
     prevState: null,
     depsSubs: [],
-  }));
+  });
 
   const depsSubs = stores.map((depStore, index) =>
     depStore.subscribe((depState, prevDepState) => {
@@ -86,12 +98,9 @@ export const derive = <
         state: newState,
       });
 
-      store.getState().listeners.forEach((listener) =>
-        listener(
-          newState,
-          prevState ?? newState // `Listener` restructs `prevState` to be non-null
-        )
-      );
+      store
+        .getState()
+        .listeners.forEach((listener) => listener(newState, prevState));
     })
   );
 
