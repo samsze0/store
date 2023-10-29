@@ -7,6 +7,7 @@ export interface Store {
   readonly setState: AnyFunction;
   readonly getState: AnyFunction;
   readonly subscribe: AnyFunction;
+  readonly destroy?: AnyFunction;
 }
 
 /**

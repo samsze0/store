@@ -32,6 +32,7 @@ export const derive = <
     subscribe: (
       listener: (state: T, prevState: T | null) => void
     ) => ObjectStoreUnsubscriber;
+    destroy: () => void;
   }
 > => {
   type Listener = (state: T, prevState: T | null) => void;
@@ -125,6 +126,9 @@ export const derive = <
     },
     setState: () => {
       throw new SetStateError("`setState` is not available in derived store");
+    },
+    destroy: () => {
+      store.getState().depsSubs.forEach((unsub) => unsub());
     },
   };
 };
