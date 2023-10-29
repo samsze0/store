@@ -1,7 +1,7 @@
 import { useEffect } from "react";
 import { act, fireEvent, render } from "@testing-library/react";
 import { afterEach, expect, it } from "vitest";
-import { createObjectStore, useStore } from "../../src";
+import { createObjectStore, createSimpleStore, useStore } from "../../src";
 
 const consoleError = console.error;
 afterEach(() => {
@@ -22,6 +22,24 @@ it("useStore", async () => {
   function Counter() {
     const { count, inc } = useStore(counterStore);
     useEffect(inc, [inc]);
+    return <div>count: {count}</div>;
+  }
+
+  const { findByText } = render(
+    <>
+      <Counter />
+    </>
+  );
+
+  await findByText("count: 1");
+});
+
+it("useStore with SimpleStore", async () => {
+  const counterStore = createSimpleStore<number>(0);
+
+  function Counter() {
+    const count = useStore(counterStore);
+    useEffect(() => counterStore.setState((state) => state + 1), []);
     return <div>count: {count}</div>;
   }
 

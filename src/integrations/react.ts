@@ -1,13 +1,14 @@
 import { useDebugValue, useSyncExternalStore } from "react";
 import { useSyncExternalStoreWithSelector } from "use-sync-external-store/shim/with-selector";
 import { Overwrite, Store } from "../shared";
+import { ReadonlyIfIsObject } from "..";
 
-export type StoreSelector<T, V> = (state: Readonly<T>) => V;
+export type StoreSelector<T, V> = (state: ReadonlyIfIsObject<T>) => V;
 
 type ReactSyncableStore<T> = Overwrite<
   Store,
   {
-    getState: () => Readonly<T>;
+    getState: () => ReadonlyIfIsObject<T>;
     subscribe: (
       listener: (state: any, prevState: any) => any,
       ...args: any[]
