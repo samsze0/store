@@ -12,6 +12,10 @@ A zustand-like state management solution.
 
 ## Usage
 
+```shell
+npm i @artizon/store
+```
+
 **`ObjectStore`** (similar to Zustand-store)
 
 ```typescript
