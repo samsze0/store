@@ -19,26 +19,31 @@ test("subscribeWithSelector with ObjectStore", () => {
     y: "testing",
   });
 
-  let called = { value: false };
+  let callCount = { value: 0 };
 
-  store.subscribe(
+  const unsubscriber = store.subscribe(
     (state, prevState) => {
-      called.value = true;
+      callCount.value++;
     },
     (state) => state.y,
     false
   );
 
   store.setState({ x: [3] });
-  expect(called.value).toBe(false);
+  expect(callCount.value).toBe(0);
 
   store.setState({ y: "wow" });
-  expect(called.value).toBe(true);
+  expect(callCount.value).toBe(1);
 
   expect(() => {
     // @ts-expect-error: should not be able to mutate state because it is readonly
     store.getState().x = 3;
   }).toThrowError(/^.*$/);
+
+  unsubscriber();
+
+  store.setState({ y: "wow wow" });
+  expect(callCount.value).toBe(1);
 });
 
 test("subscribeWithSelector with SimpleStore should not result in type error because SimpleStore's subscribe is same as ObjectStore's", () => {

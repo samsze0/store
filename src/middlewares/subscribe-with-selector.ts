@@ -1,4 +1,4 @@
-import { ObjectStore, ObjectStoreSubscribeListener } from "../vanilla";
+import { ObjectStore, ObjectStoreSubscribeListener, ObjectStoreUnsubscriber } from "../vanilla";
 import {
   GetStoreState,
   Overwrite,
@@ -19,19 +19,19 @@ type Subscribe<State> = {
     listener: ObjectStoreSubscribeListener<State>,
     selector?: undefined,
     partial?: undefined
-  ): void;
+  ): ObjectStoreUnsubscriber;
 
   <V extends Partial<State>>(
     listener: ObjectStoreSubscribeListener<V>,
     selector: (state: State) => V,
     partial: true
-  ): void;
+  ): ObjectStoreUnsubscriber;
 
   <V extends State[keyof State]>(
     listener: ObjectStoreSubscribeListener<V>,
     selector: (state: State) => V,
     partial: false
-  ): void;
+  ): ObjectStoreUnsubscriber;
 };
 
 export type { Subscribe as SubscribeWithSelectorSubscribe };
@@ -94,7 +94,7 @@ export const subscribeWithSelector = <
               return;
             };
 
-            subscribe(selectionListener);
+            return subscribe(selectionListener);
           };
         default:
           return Reflect.get(target, prop, receiver);
