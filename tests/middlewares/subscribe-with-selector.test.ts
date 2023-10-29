@@ -7,13 +7,10 @@ import {
 
 test("subscribeWithSelector with ObjectStore", () => {
   const store = subscribeWithSelector(
-    createObjectStore<{
-      x: number[];
-      y: string;
-    }>(() => ({
+    createObjectStore({
       x: [1],
       y: "testing",
-    }))
+    })
   );
 
   store.setState({ x: [2] });

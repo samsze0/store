@@ -2,17 +2,13 @@ import { expect, test } from "vitest";
 import { createObjectStore as createStore, derive } from "../src";
 
 test("derive", () => {
-  const depStore1 = createStore<{
-    value: number[];
-  }>(() => ({
+  const depStore1 = createStore({
     value: [1],
-  }));
+  });
 
-  const depStore2 = createStore<{
-    value: number[];
-  }>(() => ({
+  const depStore2 = createStore({
     value: [2],
-  }));
+  });
 
   type State = {
     deps: [number[], number[]];

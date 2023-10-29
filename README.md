@@ -3,6 +3,7 @@
 A zustand-like state management solution.
 
 **Comparision with [Zustand](https://github.com/pmndrs/zustand)**:
+
 - Safer. States are runtime immutable as they are freezed with `Object.freeze`.
 - Support any state types. Zustand assumes state is an object.
 - Addition of `DeriveStore` which creates a store that derives its state from any number of other stores.
@@ -19,16 +20,12 @@ const counterStore = createObjectStore<CounterState>((set) => ({
   inc: () => set((state) => ({ count: state.count + 1 })),
 }));
 
+// Argument to `create*Store` function can be a plain object too
+const anotherStore = createObjectStore<{ x: number }>({ x: 3 });
+
 function Counter() {
-  const count = useStore(
-    counterStore,
-    (s) => s.count
-  );
-  return (
-    <div>
-      count: {count}
-    </div>
-  );
+  const count = useStore(counterStore, (s) => s.count);
+  return <div>count: {count}</div>;
 }
 ```
 
@@ -43,18 +40,15 @@ store.setState("Hello");
 **`DeriveStore`** (similar to Jotai derive atom, but work with stores too)
 
 ```typescript
-const depStore1 = create<{
-  value: number[];
-}>(() => ({
+const depStore1 = createObjectStore({
   value: [1],
-}));
+});
 
-const depStore2 = create<{
-  value: number[];
-}>(() => ({
+const depStore2 = createObjecStore({
   value: [2],
-}));
+});
 
+// Working on removing the need to specify types of stores as the second type arg
 const deriveStore = derive<string, [typeof depStore1, typeof depStore2]>(
   [depStore1, depStore2],
   ([dep1, dep2], prevDeps, prevState) => {
@@ -67,22 +61,36 @@ const deriveStore = derive<string, [typeof depStore1, typeof depStore2]>(
 
 ```typescript
 const store = subscribeWithSelector(
-  createObjectStore<{
-    x: number[];
-    y: string;
-  }>(() => ({
+  createObjectStore({
     x: [1],
     y: "testing",
-  }))
+  })
 );
 
+// Select a slice (a property of the state)
 store.subscribe(
   (state, prevState) => {
-    called.value = true;
+    // ...
   },
   (state) => state.y,
-  false
+  false // partial?
 );
+
+// Select a partial (subset of the state)
+store.subscribe(
+  (state, prevState) => {
+    // ...
+  },
+  (state) => {
+    y: state.y;
+  },
+  true // partial?
+);
+
+// Can be used as normal `subscribe` too
+store.subscribe((state, prevState) => {
+  // ...
+});
 ```
 
 ## Middleware System - Design Decision
