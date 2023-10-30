@@ -37,9 +37,8 @@ export function useStore<T, V>(
     // https://github.com/facebook/react/blob/main/packages/use-sync-external-store/src/useSyncExternalStoreWithSelector.js
     const slice = useSyncExternalStoreWithSelector(
       store.subscribe,
-      // FIX: type returned by useStore is any
       store.getState,
-      store.getState, // TODO: getServerSnapshot
+      store.getServerSnapshot ?? store.getState,
       selector,
       equalityFn
     );
@@ -51,7 +50,7 @@ export function useStore<T, V>(
     const state = useSyncExternalStore(
       store.subscribe,
       store.getState,
-      store.getState // TODO: getServerSnapshot
+      store.getServerSnapshot ?? store.getState
     );
 
     useDebugValue(state);

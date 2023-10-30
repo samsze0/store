@@ -8,6 +8,7 @@ export interface Store {
   readonly getState: AnyFunction;
   readonly subscribe: AnyFunction;
   readonly destroy?: AnyFunction;
+  readonly getServerSnapshot?: AnyFunction;
 }
 
 /**

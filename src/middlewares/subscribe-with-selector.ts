@@ -1,4 +1,8 @@
-import { ObjectStore, ObjectStoreSubscribeListener, ObjectStoreUnsubscriber } from "../vanilla";
+import {
+  ObjectStore,
+  ObjectStoreSubscribeListener,
+  ObjectStoreUnsubscriber,
+} from "../vanilla";
 import {
   GetStoreState,
   Overwrite,
