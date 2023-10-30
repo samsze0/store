@@ -1,4 +1,4 @@
-import { SetStateError } from "../../shared";
+import { SetStateError, addMiddleware } from "../../shared";
 
 /**
  * The type of the listener function. It is called when the state changes.
@@ -50,54 +50,57 @@ export type InitialStateForObjectStore<T> =
  * @param initialState A state or a function that returns a state.
  * @returns An `ObjectStore` with APIs including `setState`, `getState`, and `subscribe`.
  */
-export const createObjectStore = <T = never>(
-  initialState: InitialStateForObjectStore<T>
-): ObjectStore<T> => {
-  let state: Readonly<T>;
-  const listeners: Set<ObjectStoreSubscribeListener<T>> = new Set();
+export const createObjectStore = Object.assign(
+  <T = never>(initialState: InitialStateForObjectStore<T>): ObjectStore<T> => {
+    let state: Readonly<T>;
+    const listeners: Set<ObjectStoreSubscribeListener<T>> = new Set();
 
-  const getState: ObjectStore<T>["getState"] = () => state;
+    const getState: ObjectStore<T>["getState"] = () => state;
 
-  const setState: ObjectStore<T>["setState"] = (partial) => {
-    const nextState: Readonly<T | Partial<T>> =
-      typeof partial === "function"
-        ? // TODO: Remove type assertion once https://github.com/microsoft/TypeScript/issues/37663 is resolved
-          (partial as (state: T) => Readonly<T | Partial<T>>)(state)
-        : partial;
+    const setState: ObjectStore<T>["setState"] = (partial) => {
+      const nextState: Readonly<T | Partial<T>> =
+        typeof partial === "function"
+          ? // TODO: Remove type assertion once https://github.com/microsoft/TypeScript/issues/37663 is resolved
+            (partial as (state: T) => Readonly<T | Partial<T>>)(state)
+          : partial;
 
-    if (Object.is(nextState, state))
-      throw new SetStateError(
-        "The input to the setState function must return a different Object. This is to prevent accidental mutation behaviour hence is not allowed."
-      );
+      if (Object.is(nextState, state))
+        throw new SetStateError(
+          "The input to the setState function must return a different Object. This is to prevent accidental mutation behaviour hence is not allowed."
+        );
 
-    const previousState = state;
-    state = Object.freeze(Object.assign({}, state, nextState));
+      const previousState = state;
+      state = Object.freeze(Object.assign({}, state, nextState));
 
-    listeners.forEach((listener) => listener(state, previousState));
-  };
+      listeners.forEach((listener) => listener(state, previousState));
+    };
 
-  const subscribe: ObjectStore<T>["subscribe"] = (listener) => {
-    listeners.add(listener);
+    const subscribe: ObjectStore<T>["subscribe"] = (listener) => {
+      listeners.add(listener);
 
-    return () => listeners.delete(listener);
-  };
+      return () => listeners.delete(listener);
+    };
 
-  state =
-    typeof initialState === "function"
-      ? (
-          initialState as (
-            set: ObjectStore<T>["setState"],
-            get: ObjectStore<T>["getState"]
-          ) => Readonly<T>
-        )(setState, getState)
-      : (initialState as Readonly<T>);
-  state = Object.freeze(state);
+    state =
+      typeof initialState === "function"
+        ? (
+            initialState as (
+              set: ObjectStore<T>["setState"],
+              get: ObjectStore<T>["getState"]
+            ) => Readonly<T>
+          )(setState, getState)
+        : (initialState as Readonly<T>);
+    state = Object.freeze(state);
 
-  return {
-    getState,
-    setState,
-    subscribe,
-  };
-};
+    return {
+      getState,
+      setState,
+      subscribe,
+    };
+  },
+  {
+    addMiddleware,
+  }
+);
 
 export type ObjectStoreCreator = typeof createObjectStore;

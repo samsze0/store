@@ -71,6 +71,12 @@ const store = subscribeWithSelector(
   })
 );
 
+// Or you can opt for the addMiddleware helper
+const demoStore = createObjectStore.addMiddleware(subscribeWithSelector)({
+  x: [1],
+  y: "testing",
+});
+
 // Select a slice (a property of the state)
 store.subscribe(
   (state, prevState) => {

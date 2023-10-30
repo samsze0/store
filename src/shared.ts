@@ -68,3 +68,30 @@ export function shallowEqual(a: Object, b: Object): boolean {
 export function equalityCheck<T>(a: T, b: T): boolean {
   return typeof a === "object" ? Object.is(a, b) : a === b;
 }
+
+/**
+ * A type function that returns the tail of a list
+ */
+export type Tail<L extends any[]> = L extends [infer _, ...infer T] ? T : never;
+
+/**
+ * Add a middleware to the store.
+ * @param this The store to add the middleware to.
+ * @param middlewareArgs The extra arguments to supply to the middleware.
+ * @returns The store with the middleware applied.
+ */
+export function addMiddleware<
+  InputStore extends Store,
+  OutputStore extends Store,
+  MiddlewareArgs extends any[],
+  CreateInputStoreArgs extends any[]
+>(
+  this: (...args: CreateInputStoreArgs) => InputStore,
+  middleware: (inputStore: InputStore, ...args: MiddlewareArgs) => OutputStore,
+  ...middlewareArgs: MiddlewareArgs
+): (...args: CreateInputStoreArgs) => OutputStore {
+  const createInputStore = this;
+  return (...args: Parameters<typeof createInputStore>) => {
+    return middleware(createInputStore(...args), ...middlewareArgs);
+  };
+}

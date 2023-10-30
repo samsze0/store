@@ -1,4 +1,4 @@
-import { SetStateError } from "../../shared";
+import { SetStateError, addMiddleware } from "../../shared";
 
 /**
  * The type of the listener function. It is called when the state changes.
@@ -46,62 +46,70 @@ export type InitialStateForSimpleStore<T> = ReadonlyIfIsObject<T>;
  * Creates an `SimpleStore` with the given initial state. Use `SimpleStore` if you want a store that can stores any value.
  * @param initialState A state.
  * @returns An `SimpleStore` with APIs including `setState`, `getState`, and `subscribe`.
+ *
+ * This function also has an `addMiddleware` method for adding middlewares. This promotes a more friendly syntax for adding middlewares.
+ * @method addMiddleware Add a middleware to the store.
  */
-export const createSimpleStore = <T>(
-  initialState: InitialStateForSimpleStore<T>
-): SimpleStore<T> => {
-  let state: ReadonlyIfIsObject<T>;
-  /**
-   * Whether the state is an Object. This includes Arrays and functions.
-   */
-  let stateIsObject: boolean;
-  const listeners: Set<SimpleStoreSubscribeListener<T>> = new Set();
+export const createSimpleStore = Object.assign(
+  <T>(initialState: InitialStateForSimpleStore<T>): SimpleStore<T> => {
+    let state: ReadonlyIfIsObject<T>;
+    /**
+     * Whether the state is an Object. This includes Arrays and functions.
+     */
+    let stateIsObject: boolean;
+    const listeners: Set<SimpleStoreSubscribeListener<T>> = new Set();
 
-  const getState: SimpleStore<T>["getState"] = () => state;
+    const getState: SimpleStore<T>["getState"] = () => state;
 
-  const setState: SimpleStore<T>["setState"] = (s) => {
-    const nextState: ReadonlyIfIsObject<T> =
-      typeof s === "function"
-        ? // TODO: Remove type assertion once https://github.com/microsoft/TypeScript/issues/37663 is resolved
-          (s as (state: ReadonlyIfIsObject<T>) => ReadonlyIfIsObject<T>)(state)
-        : (s as ReadonlyIfIsObject<T>);
+    const setState: SimpleStore<T>["setState"] = (s) => {
+      const nextState: ReadonlyIfIsObject<T> =
+        typeof s === "function"
+          ? // TODO: Remove type assertion once https://github.com/microsoft/TypeScript/issues/37663 is resolved
+            (s as (state: ReadonlyIfIsObject<T>) => ReadonlyIfIsObject<T>)(
+              state
+            )
+          : (s as ReadonlyIfIsObject<T>);
 
-    if (stateIsObject && Object.is(nextState, state))
-      throw new SetStateError(
-        "The input to the setState function must return a different Object. This is to prevent accidental mutation behaviour hence is not allowed."
-      );
+      if (stateIsObject && Object.is(nextState, state))
+        throw new SetStateError(
+          "The input to the setState function must return a different Object. This is to prevent accidental mutation behaviour hence is not allowed."
+        );
 
-    if (!stateIsObject && nextState === state) return;
+      if (!stateIsObject && nextState === state) return;
 
-    const previousState = state;
-    state = nextState;
+      const previousState = state;
+      state = nextState;
+      try {
+        Object.getPrototypeOf(initialState);
+        state = Object.freeze(state) as ReadonlyIfIsObject<T>;
+      } catch {}
+
+      listeners.forEach((listener) => listener(state, previousState));
+    };
+
+    const subscribe: SimpleStore<T>["subscribe"] = (listener) => {
+      listeners.add(listener);
+
+      return () => listeners.delete(listener);
+    };
+
+    state = initialState;
     try {
       Object.getPrototypeOf(initialState);
       state = Object.freeze(state) as ReadonlyIfIsObject<T>;
-    } catch {}
+    } catch {
+      stateIsObject = false;
+    }
 
-    listeners.forEach((listener) => listener(state, previousState));
-  };
-
-  const subscribe: SimpleStore<T>["subscribe"] = (listener) => {
-    listeners.add(listener);
-
-    return () => listeners.delete(listener);
-  };
-
-  state = initialState;
-  try {
-    Object.getPrototypeOf(initialState);
-    state = Object.freeze(state) as ReadonlyIfIsObject<T>;
-  } catch {
-    stateIsObject = false;
+    return {
+      getState,
+      setState,
+      subscribe,
+    };
+  },
+  {
+    addMiddleware,
   }
-
-  return {
-    getState,
-    setState,
-    subscribe,
-  };
-};
+);
 
 export type SimpleStoreCreator = typeof createSimpleStore;
