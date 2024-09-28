@@ -4,7 +4,6 @@ A zustand-like state management solution.
 
 **Comparision with [Zustand](https://github.com/pmndrs/zustand)**:
 
-- Safer. States are runtime immutable as they are freezed with `Object.freeze`.
 - Support any state types. Zustand assumes state is an object.
 - Addition of `DeriveStore` which creates a store that derives its state from any number of other stores.
 - Middlewares are implemented using JS proxy.
@@ -143,8 +142,3 @@ type OutputStore = Overwrite<
     subscribe: CustomSubscribeFunction;
   }
 ```
-
-## TODO
-
-- More tests e.g. with SSR
-- `MutableStore` (similar to Valtio)
