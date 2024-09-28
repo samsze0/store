@@ -12,7 +12,7 @@ A zustand-like state management solution.
 ## Usage
 
 ```shell
-npm i @artizon/store
+npm i @samsze/store
 ```
 
 **`ObjectStore`** (similar to Zustand-store)

@@ -1,15 +1,15 @@
 {
-  "name": "@artizon/store",
-  "version": "0.2.3",
+  "name": "@samsze/store",
+  "version": "1.0.0",
   "description": "",
   "author": "Sam Sze",
   "license": "MIT",
   "contributors": [
-    "Sam Sze (https://github.com/artizon-io)"
+    "Sam Sze (https://github.com/samsze0)"
   ],
   "repository": {
     "type": "git",
-    "url": "git+https://https://github.com/artizon-io/store.git"
+    "url": "git+https://https://github.com/samsze0/store.git"
   },
   "files": [
     "dist"
@@ -17,12 +17,14 @@
   "keywords": [
     "react",
     "state",
-    "manager",
-    "management",
+    "state management",
     "redux",
-    "store"
+    "store",
+    "zustand",
+    "jotai",
+    "immer"
   ],
-  "homepage": "https://github.com/artizon-io/store",
+  "homepage": "https://github.com/samsze0/store",
   "private": false,
   "publishConfig": {
     "access": "public"
