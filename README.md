@@ -142,3 +142,7 @@ type OutputStore = Overwrite<
     subscribe: CustomSubscribeFunction;
   }
 ```
+
+## License
+
+MIT

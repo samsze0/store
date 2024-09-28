@@ -24,7 +24,8 @@ export const derive = <
   onChange: (
     depsState: DepsState,
     prevDepsState: DepsState | null,
-    prevState: T | null
+    prevState: T | null,
+    set: (state: T) => void
   ) => T
 ): Overwrite<
   SimpleStore<T> | ObjectStore<T>,
@@ -73,9 +74,20 @@ export const derive = <
     listeners: new Set(),
     depsState: initialDepsState,
     prevDepsState: null,
-    state: onChange(initialDepsState, null, null),
+    // @ts-ignore
+    state: null,
     prevState: null,
     depsSubs: [],
+  });
+
+  const setState = (state: T) => {
+    store.setState({
+      state,
+    });
+  };
+
+  store.setState({
+    state: onChange(initialDepsState, null, null, setState),
   });
 
   const depsSubs = stores.map((depStore, index) =>
@@ -90,7 +102,12 @@ export const derive = <
 
       const prevState = store.getState().state;
 
-      const newState = onChange(newDepsState, currentDepsState, prevState);
+      const newState = onChange(
+        newDepsState,
+        currentDepsState,
+        prevState,
+        setState
+      );
 
       store.setState({
         prevDepsState: currentDepsState,
