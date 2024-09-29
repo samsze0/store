@@ -80,10 +80,17 @@ export const derive = <
     depsSubs: [],
   });
 
-  const setState = (state: T) => {
+  const setState = (newState: T) => {
+    const prevState = store.getState().state;
+
     store.setState({
-      state,
+      state: newState,
+      prevState: prevState,
     });
+
+    store
+      .getState()
+      .listeners.forEach((listener) => listener(newState, prevState));
   };
 
   store.setState({
