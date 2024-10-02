@@ -25,21 +25,57 @@ test("derive", () => {
     }
   );
 
+  let state: State | null = null;
+  let prevState: State | null = null;
+
+  deriveStore.subscribe((s, ps) => {
+    console.warn("deriveStore.subscribe", s, ps);
+    state = s;
+    prevState = ps;
+  });
+
+  expect(state).toStrictEqual({
+    deps: [[1], [2]],
+    prevDeps: null,
+  });
+  expect(prevState).toStrictEqual(null);
+
   expect(deriveStore.getState()).toStrictEqual({
     deps: [[1], [2]],
     prevDeps: null,
   });
+  expect(state).toStrictEqual({
+    deps: [[1], [2]],
+    prevDeps: null,
+  });
+  expect(prevState).toStrictEqual(null);
 
   depStore1.setState({ value: [3] });
   expect(deriveStore.getState()).toStrictEqual({
     deps: [[3], [2]],
     prevDeps: [[1], [2]],
   });
+  expect(state).toStrictEqual({
+    deps: [[3], [2]],
+    prevDeps: [[1], [2]],
+  });
+  expect(prevState).toStrictEqual({
+    deps: [[1], [2]],
+    prevDeps: null,
+  });
 
   depStore2.setState({ value: [4] });
   expect(deriveStore.getState()).toStrictEqual({
     deps: [[3], [4]],
     prevDeps: [[3], [2]],
+  });
+  expect(state).toStrictEqual({
+    deps: [[3], [4]],
+    prevDeps: [[3], [2]],
+  });
+  expect(prevState).toStrictEqual({
+    deps: [[3], [2]],
+    prevDeps: [[1], [2]],
   });
 });
 
