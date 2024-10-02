@@ -140,6 +140,8 @@ export const derive = <
         listeners: newListeners,
       });
 
+      listener(store.getState().state, store.getState().prevState);
+
       return () => {
         const listeners = store.getState().listeners;
         listeners.delete(listener);
